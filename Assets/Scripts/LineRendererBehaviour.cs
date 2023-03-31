@@ -13,6 +13,7 @@ public class LineRendererBehaviour : MonoBehaviour
 
     private LineRenderer lineRenderer;
     private Vector3 distance;
+    private float boundsSizeMultiplier = 0.8f;
 
     private void Start()
     {
@@ -23,9 +24,9 @@ public class LineRendererBehaviour : MonoBehaviour
         lineRenderer.useWorldSpace = true;
         lineRenderer.alignment = LineAlignment.TransformZ;
         transform.localEulerAngles = new Vector3(90, 0, 0);
-        lineRenderer.endWidth = target.transform.localScale.x;
+        lineRenderer.endWidth = target.transform.GetComponent<MeshRenderer>().bounds.size.z * boundsSizeMultiplier;
 
-        UpdateLine();
+        UpdateLine(ball.transform.position);
     }
 
     private void Update()
@@ -39,11 +40,12 @@ public class LineRendererBehaviour : MonoBehaviour
         }
     }
 
-    private void UpdateLine()
+    private void UpdateLine(Vector3 ballPos)
     {
-        distance = (target.transform.position - ball.transform.position).normalized;
+        distance = (target.transform.position - ballPos).normalized;
         distance.z = -distance.z;
         distance.y = 0;
+
         lineRenderer.SetPosition(1, target.transform.position - lineEndOffset);
         lineRenderer.enabled = true;
     }
@@ -51,5 +53,11 @@ public class LineRendererBehaviour : MonoBehaviour
     private void DisableLineOnJumping()
     {
         lineRenderer.enabled = false;
+    }
+
+    private void OnDestroy()
+    {
+        Ball.OnJumpStarted -= DisableLineOnJumping;
+        Ball.OnJumpFinished -= UpdateLine;
     }
 }

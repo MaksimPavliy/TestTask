@@ -19,8 +19,8 @@ public class Obstacle : MonoBehaviour
 
     public void SimulateInfection()
     {
+        boxCollider.enabled = false;
         meshRenderer.material.color = projectileMaterial.color;
-        boxCollider.isTrigger = true;
 
         StartCoroutine(DestroyObstacle());
     }

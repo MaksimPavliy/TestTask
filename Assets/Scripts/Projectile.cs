@@ -9,7 +9,7 @@ public class Projectile : MonoBehaviour
     [SerializeField] private float projectileSpeed;
     [SerializeField] private float explosionRadiusMultipier = 0.8f;
 
-    public static UnityAction<Vector3> OnExplosion;
+    public static UnityAction OnExplosion;
 
     private Rigidbody rb;
 
@@ -35,8 +35,7 @@ public class Projectile : MonoBehaviour
                 collider.gameObject.GetComponent<Obstacle>().SimulateInfection();
             }
         }
-
-        OnExplosion?.Invoke(transform.position);
+        OnExplosion?.Invoke();
         Destroy(gameObject);
     }
 

@@ -7,6 +7,9 @@ public class CameraBehaviour : MonoBehaviour
     [SerializeField] private Transform followTarget;
     [SerializeField] private float followSpeed;
     [SerializeField] private float scaleZoomMultiplier;
+    [SerializeField] private Transform portal;
+    [SerializeField] private Vector3 endPos;
+    [SerializeField] private Quaternion endRotation;
 
     private Vector3 offset;
     private Vector3 desiredPos;
@@ -20,7 +23,7 @@ public class CameraBehaviour : MonoBehaviour
 
     void LateUpdate()
     {
-        if (followTarget)
+        if (followTarget && GameManager.instance.isPlaying)
         {
             float scaleOffset = followTarget.transform.localScale.magnitude / targetStartingScale.magnitude;
 
@@ -28,6 +31,11 @@ public class CameraBehaviour : MonoBehaviour
             desiredPos.y = transform.position.y;
             Vector3 followPos = Vector3.Lerp(transform.position, desiredPos, followSpeed);
             transform.position = followPos;
+        }
+        else
+        {
+            transform.position = Vector3.Lerp(transform.position, endPos, followSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.Lerp(transform.rotation, endRotation, followSpeed * Time.deltaTime);
         }
     }
 }
