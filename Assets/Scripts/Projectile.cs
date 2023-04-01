@@ -9,7 +9,7 @@ public class Projectile : MonoBehaviour
     [SerializeField] private float projectileSpeed;
     [SerializeField] private float explosionRadiusMultipier = 0.8f;
 
-    public static UnityAction OnExplosion;
+    public static UnityAction<float> OnExplosion;
 
     private Rigidbody rb;
 
@@ -21,7 +21,10 @@ public class Projectile : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if(collision.gameObject.tag == "Player" || collision.gameObject.tag == "Ground")
+        float delay = 0;
+        Obstacle obstacle = null;
+
+        if (collision.gameObject.tag == "Player" || collision.gameObject.tag == "Ground")
         {
             return;
         }
@@ -32,11 +35,25 @@ public class Projectile : MonoBehaviour
         {
             if (collider.tag == "Obstacle")
             {
-                collider.gameObject.GetComponent<Obstacle>().SimulateInfection();
+                obstacle = collider.gameObject.GetComponent<Obstacle>();
+                obstacle.SimulateInfection();
             }
         }
-        OnExplosion?.Invoke();
+        if (obstacle)
+        {
+            delay = obstacle.ParticleEmissionDelay;
+        }
+        OnExplosion?.Invoke(delay);
         Destroy(gameObject);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.tag == "Portal")
+        {
+            OnExplosion?.Invoke(0);
+            Destroy(gameObject);
+        }
     }
 
     private void StartFlying(Vector3 shotDirection)

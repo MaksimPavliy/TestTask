@@ -12,7 +12,7 @@ public class Ball : MonoBehaviour
     [SerializeField] private float maxChargeTime = 10f;
     [SerializeField] private float minScaleValue = 0.25f;
     [SerializeField] private float minShotDelay = 2f;
-    [SerializeField] private float projectileScaleSmoothed = 1.175f;
+    [SerializeField] private float projectileScaleSmoothValue = 1.175f;
     [SerializeField] private LineRenderer lineRenderer;
     [SerializeField] private float areaToClearLength;
 
@@ -23,8 +23,6 @@ public class Ball : MonoBehaviour
     private bool canShoot = true;
     private Vector3 minBallScale;
     private GameObject areaToClear;
-    private Collider[] colliders;
-    private Sequence jumpSequence;
 
     void Start()
     {
@@ -50,7 +48,10 @@ public class Ball : MonoBehaviour
         float timer = 0;
         float minScaleLose = 0.075f;
         float maxScaleLose = 0.85f;
-        float projectileScaleMultiplier = 1;
+        float projectileScaleMultiplier = 0;
+        float projectileMaxScaleMultiplier = 3f;
+        float projectileMinScaleMultiplier = 1.2f;
+
         Vector3 ballScaleBeforeCharging = transform.localScale;
         Vector3 ballScaleAfterMinLose = transform.localScale - transform.localScale * minScaleLose;
 
@@ -62,7 +63,7 @@ public class Ball : MonoBehaviour
             yield return new WaitForEndOfFrame();
 
             float ballScaleDecrease = Mathf.Lerp(0, maxScaleLose, timer / maxChargeTime);
-            projectileScaleMultiplier = Mathf.Lerp(3, 1.2f, timer / maxChargeTime / projectileScaleSmoothed);
+            projectileScaleMultiplier = Mathf.Lerp(projectileMaxScaleMultiplier, projectileMinScaleMultiplier, timer / maxChargeTime / projectileScaleSmoothValue);
 
             if (transform.localScale.magnitude <= minBallScale.magnitude)
             {
@@ -72,26 +73,25 @@ public class Ball : MonoBehaviour
 
             transform.localScale = ballScaleBeforeCharging - ballScaleDecrease * ballScaleBeforeCharging;
 
-            if (!projectile)
+            if (projectile)
             {
-                break;
-            }
-            projectile.transform.localScale = ballScaleDecrease * ballScaleBeforeCharging * projectileScaleMultiplier;
+                projectile.transform.localScale = ballScaleDecrease * ballScaleBeforeCharging * projectileScaleMultiplier;
+            }        
         }
 
         if (projectile && transform.localScale.magnitude > ballScaleAfterMinLose.magnitude)
         {
-            float delayLeft = minShotDelay - timer;
-            transform.DOScale(ballScaleAfterMinLose, delayLeft);
-            projectile.transform.DOScale(ballScaleBeforeCharging * minScaleLose * projectileScaleMultiplier, delayLeft);
-            yield return new WaitForSeconds(delayLeft);
+            float shotDelay = minShotDelay - timer;
+            transform.DOScale(ballScaleAfterMinLose, shotDelay);
+            projectile.transform.DOScale(ballScaleBeforeCharging * minScaleLose * projectileScaleMultiplier, shotDelay);
+            yield return new WaitForSeconds(shotDelay);
         }
         OnShot?.Invoke((targetTransform.position - transform.position).normalized);
     }
 
-    private void CheckIfAreaCleared()
+    private void CheckIfAreaCleared(float delay)
     {
-        Vector3 lineStartPoint = lineRenderer.GetComponent<LineRenderer>().GetPosition(0);
+        Vector3 lineStartPoint = lineRenderer.GetPosition(0);
         Vector3 areaToClearEndPoint = lineStartPoint + areaToClearLength * (targetTransform.position - lineStartPoint).normalized;
         areaToClearEndPoint.y = 0;
 
@@ -103,11 +103,13 @@ public class Ball : MonoBehaviour
 
         areaToClear.transform.position = areaCenter;
         areaToClear.transform.rotation = rotation;
+
+        //Creates collider to see overlap area in gizmos 
         BoxCollider boxCollider = areaToClear.GetComponent<BoxCollider>();
         boxCollider.size = new Vector3(areaToClearWidth, 1f, areaToClearLength);
         boxCollider.isTrigger = true;
 
-        colliders = Physics.OverlapBox(areaCenter, new Vector3(areaToClearWidth / 2f, 8f, areaToClearLength / 2f), rotation);
+        Collider[] colliders = Physics.OverlapBox(areaCenter, new Vector3(areaToClearWidth / 2f, 10f, areaToClearLength / 2f), rotation);
 
         foreach (Collider collider in colliders)
         {
@@ -117,20 +119,24 @@ public class Ball : MonoBehaviour
                 return;
             }
         }
-        StartJumping(areaCenter);
+        StartJumping(areaCenter, delay);
     }
 
-    private void StartJumping(Vector3 targetPos)
+    private void StartJumping(Vector3 targetPos, float delay)
     {
+        float jumpPower = 4f;
+        int numOfJumps = 3;
+        float jumpDuration = 1.2f;
+
         if (GameManager.instance.isPlaying)
         {
             OnJumpStarted?.Invoke();
 
-            jumpSequence = DOTween.Sequence();
-            jumpSequence.AppendInterval(1f);
-            jumpSequence.Append(transform.DOJump(targetPos, 4f, 3, 1.2f).SetEase(Ease.Linear));
+            Sequence jumpSequence = DOTween.Sequence();
+            jumpSequence.AppendInterval(delay);
+            jumpSequence.Append(transform.DOJump(targetPos, jumpPower, numOfJumps, jumpDuration).SetEase(Ease.Linear));
             jumpSequence.AppendCallback(() => OnJumpFinished?.Invoke(transform.position))
-                .AppendCallback(() => CheckIfAreaCleared());
+                .AppendCallback(() => CheckIfAreaCleared(0));
 
             jumpSequence.Play();
         }
@@ -138,25 +144,22 @@ public class Ball : MonoBehaviour
 
     private void JumpInPortal(float delay)
     {
-        foreach (var collider in colliders)
-        {
-            if (collider && collider.tag == "Obstacle")
-            {
-                return;
-            }
-        }
+        float portalJumpPower = 8.25f;
+        int numOfJumps = 1;
+        float jumpDuration = 1.25f;
+        float showWinScreenDelay = 1f;
 
         GameManager.instance.isPlaying = false;
-        DOTween.Kill(jumpSequence);
         OnJumpStarted?.Invoke();
-        jumpSequence = DOTween.Sequence();
+        Sequence jumpSequence = DOTween.Sequence();
         jumpSequence.AppendInterval(delay);
 
         float distanceToPortal = Vector3.Distance(transform.position, targetTransform.position);
         Vector3 jumpTargetPos = transform.position + 2 * distanceToPortal * (targetTransform.position - transform.position).normalized;
         jumpTargetPos.y = transform.position.y;
 
-        jumpSequence.Append(transform.DOJump(jumpTargetPos, 7.75f, 1, 1.25f).SetEase(Ease.Linear));
+        jumpSequence.Append(transform.DOJump(jumpTargetPos, portalJumpPower, numOfJumps, jumpDuration).SetEase(Ease.Linear));
+        jumpSequence.AppendInterval(showWinScreenDelay);
         jumpSequence.AppendCallback(() => GameManager.instance.WinGame());
         jumpSequence.Play();
     }

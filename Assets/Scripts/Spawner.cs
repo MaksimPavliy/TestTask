@@ -17,6 +17,7 @@ public class Spawner : MonoBehaviour
     {
         float gridSize = Mathf.Sqrt(obstacleCount);
         float cellSize = (areaHeight + areaWidth) / 2 / gridSize;
+        float boundExpandValue = 5f;
 
         for (int x = 0; x < gridSize; x++)
         {
@@ -29,7 +30,7 @@ public class Spawner : MonoBehaviour
                 GameObject obstacle = Instantiate(obstaclePrefab, transform.position + spawnPosition, randomrotation, obstacleParent);
 
                 Bounds ballTargetBounds = ballTarget.GetComponent<BoxCollider>().bounds;
-                ballTargetBounds.Expand(5f);
+                ballTargetBounds.Expand(boundExpandValue);
 
                 if (ballTargetBounds.Contains(obstacle.transform.position))
                 {

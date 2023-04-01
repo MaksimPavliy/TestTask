@@ -21,7 +21,7 @@ public class CameraBehaviour : MonoBehaviour
         targetStartingScale = followTarget.transform.localScale;
     }
 
-    void LateUpdate()
+    private void LateUpdate()
     {
         if (followTarget && GameManager.instance.isPlaying)
         {

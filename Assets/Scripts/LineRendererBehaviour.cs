@@ -8,11 +8,11 @@ public class LineRendererBehaviour : MonoBehaviour
     [SerializeField] private Ball ball;
     [SerializeField] private Transform target;
     [SerializeField] private Vector3 lineEndOffset;
-    [SerializeField] private float fadelineMultiplier;
+    [SerializeField] private float fadeLineValue;
     [SerializeField] private float lineWidthSmoothValue;
 
     private LineRenderer lineRenderer;
-    private Vector3 distance;
+    private Vector3 lineStartOffset;
     private float boundsSizeMultiplier = 0.8f;
 
     private void Start()
@@ -31,20 +31,20 @@ public class LineRendererBehaviour : MonoBehaviour
 
     private void Update()
     {
-        if (ball)
+        if (GameManager.instance.isPlaying)
         {
             float lineWidth = ball.transform.localScale.magnitude * lineWidthSmoothValue;
             lineRenderer.startWidth = lineWidth;
             Vector3 lineStartPos = new Vector3(ball.transform.position.x, ball.transform.position.y - ball.transform.localScale.y / 2, ball.transform.position.z);
-            lineRenderer.SetPosition(0, lineStartPos - distance * ball.transform.localScale.magnitude * fadelineMultiplier);
+            lineRenderer.SetPosition(0, lineStartPos - lineStartOffset * ball.transform.localScale.magnitude * fadeLineValue);
         }
     }
 
     private void UpdateLine(Vector3 ballPos)
     {
-        distance = (target.transform.position - ballPos).normalized;
-        distance.z = -distance.z;
-        distance.y = 0;
+        lineStartOffset = (target.transform.position - ballPos).normalized;
+        lineStartOffset.z = -lineStartOffset.z;
+        lineStartOffset.y = 0;
 
         lineRenderer.SetPosition(1, target.transform.position - lineEndOffset);
         lineRenderer.enabled = true;

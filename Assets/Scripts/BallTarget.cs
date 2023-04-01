@@ -7,20 +7,17 @@ public class BallTarget : MonoBehaviour
 {
     [SerializeField] private Animator animator;
     [SerializeField] private float distanceOffset;
-    [SerializeField] private float openDelay = 2.5f;
+    [SerializeField] private float openDelay = 2.25f;
 
     public static UnityAction<float> OnPortalOpened;
 
     void Start()
     {
-        Debug.Log(animator);
         Ball.OnJumpFinished += TryToOpenPortal;
     }
 
     private void TryToOpenPortal(Vector3 ballPos)
     {
-        Debug.Log(Vector2.Distance(transform.position, ballPos) - distanceOffset);
-
         if (Vector2.Distance(transform.position, ballPos) - distanceOffset < 5)
         {
             animator.SetBool("isOpened", true);

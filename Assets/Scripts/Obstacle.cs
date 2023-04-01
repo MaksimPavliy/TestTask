@@ -9,6 +9,9 @@ public class Obstacle : MonoBehaviour
     private MeshRenderer meshRenderer;
     private new ParticleSystem particleSystem;
     private BoxCollider boxCollider;
+    private float particleEmissionDelay = 0.8f;
+
+    public float ParticleEmissionDelay => particleEmissionDelay;
 
     private void Start()
     {
@@ -27,7 +30,7 @@ public class Obstacle : MonoBehaviour
 
     private IEnumerator DestroyObstacle()
     { 
-        yield return new WaitForSeconds(0.8f);
+        yield return new WaitForSeconds(particleEmissionDelay);
 
         meshRenderer.enabled = false;
         particleSystem.Play();
