@@ -1201,7 +1201,7 @@ MonoBehaviour:
   obstacleParent: {fileID: 1657585196}
   obstacleCount: 80
   minObstacleDistance: 1.25
-  maxObstacleDistance: 1.75
+  maxObstacleDistance: 1.55
 --- !u!4 &1400175084
 Transform:
   m_ObjectHideFlags: 0

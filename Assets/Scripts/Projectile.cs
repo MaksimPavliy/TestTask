@@ -23,6 +23,7 @@ public class Projectile : MonoBehaviour
     {
         if (other.tag == "Portal")
         {
+            OnExplosion?.Invoke(0);
             Destroy(gameObject);
         }
 

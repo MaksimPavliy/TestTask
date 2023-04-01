@@ -128,4 +128,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   projectileSpeed: 30
-  explosionRadiusMultipier: 0.8
+  explosionRadiusMultipier: 1
