@@ -19,39 +19,30 @@ public class Projectile : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        float delay = 0;
-        Obstacle obstacle = null;
-
-        if (collision.gameObject.tag == "Player" || collision.gameObject.tag == "Ground")
-        {
-            return;
-        }
-
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, transform.localScale.magnitude * explosionRadiusMultipier);
-
-        foreach (var collider in hitColliders)
-        {
-            if (collider.tag == "Obstacle")
-            {
-                obstacle = collider.gameObject.GetComponent<Obstacle>();
-                obstacle.SimulateInfection();
-            }
-        }
-        if (obstacle)
-        {
-            delay = obstacle.ParticleEmissionDelay;
-        }
-        OnExplosion?.Invoke(delay);
-        Destroy(gameObject);
-    }
-
     private void OnTriggerEnter(Collider other)
     {
-        if(other.tag == "Portal")
+        if (other.tag == "Portal")
         {
-            OnExplosion?.Invoke(0);
+            Destroy(gameObject);
+        }
+
+        if (other.gameObject.tag == "Obstacle")
+        {
+            float delay = 0;
+            Obstacle obstacle = null;
+
+            Collider[] hitColliders = Physics.OverlapSphere(transform.position, transform.localScale.magnitude * explosionRadiusMultipier);
+
+            foreach (var collider in hitColliders)
+            {
+                if (collider.tag == "Obstacle")
+                {
+                    obstacle = collider.gameObject.GetComponent<Obstacle>();
+                    obstacle.SimulateInfection();
+                }
+            }
+            delay = obstacle.ParticleEmissionDelay;
+            OnExplosion?.Invoke(delay);
             Destroy(gameObject);
         }
     }

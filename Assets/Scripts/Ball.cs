@@ -15,6 +15,9 @@ public class Ball : MonoBehaviour
     [SerializeField] private float projectileScaleSmoothValue = 1.175f;
     [SerializeField] private LineRenderer lineRenderer;
     [SerializeField] private float areaToClearLength;
+    [SerializeField] private float jumpDuration;
+    [SerializeField] float projectileMaxScaleMultiplier = 3f;
+    [SerializeField] float projectileMinScaleMultiplier = 1.2f;
 
     public static UnityAction OnJumpStarted;
     public static UnityAction<Vector3> OnJumpFinished;
@@ -46,11 +49,9 @@ public class Ball : MonoBehaviour
     {
         canShoot = false;
         float timer = 0;
-        float minScaleLose = 0.075f;
+        float minScaleLose = 0.1f;
         float maxScaleLose = 0.85f;
         float projectileScaleMultiplier = 0;
-        float projectileMaxScaleMultiplier = 3f;
-        float projectileMinScaleMultiplier = 1.2f;
 
         Vector3 ballScaleBeforeCharging = transform.localScale;
         Vector3 ballScaleAfterMinLose = transform.localScale - transform.localScale * minScaleLose;
@@ -91,7 +92,7 @@ public class Ball : MonoBehaviour
 
     private void CheckIfAreaCleared(float delay)
     {
-        Vector3 lineStartPoint = lineRenderer.GetPosition(0);
+        Vector3 lineStartPoint = transform.position;
         Vector3 areaToClearEndPoint = lineStartPoint + areaToClearLength * (targetTransform.position - lineStartPoint).normalized;
         areaToClearEndPoint.y = 0;
 
@@ -119,14 +120,13 @@ public class Ball : MonoBehaviour
                 return;
             }
         }
-        StartJumping(areaCenter, delay);
+        StartJumping((areaCenter + transform.position) / 2, delay);
     }
 
     private void StartJumping(Vector3 targetPos, float delay)
     {
         float jumpPower = 4f;
-        int numOfJumps = 3;
-        float jumpDuration = 1.2f;
+        int numOfJumps = 2;
 
         if (GameManager.instance.isPlaying)
         {
@@ -144,7 +144,7 @@ public class Ball : MonoBehaviour
 
     private void JumpInPortal(float delay)
     {
-        float portalJumpPower = 8.25f;
+        float portalJumpPower = 8.75f;
         int numOfJumps = 1;
         float jumpDuration = 1.25f;
         float showWinScreenDelay = 1f;

@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: -5362007405137408985}
   - component: {fileID: -2765063603006011628}
   m_Layer: 0
-  m_Name: ShootingBall
+  m_Name: Projectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -128,4 +128,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   projectileSpeed: 30
-  explosionRadiusMultipier: 1.1
+  explosionRadiusMultipier: 0.8

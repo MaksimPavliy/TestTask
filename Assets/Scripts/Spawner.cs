@@ -17,7 +17,7 @@ public class Spawner : MonoBehaviour
     {
         float gridSize = Mathf.Sqrt(obstacleCount);
         float cellSize = (areaHeight + areaWidth) / 2 / gridSize;
-        float boundExpandValue = 5f;
+        float boundExpandValue = 10f;
 
         for (int x = 0; x < gridSize; x++)
         {
